@@ -1,0 +1,13 @@
+{
+  "name": "rayvolgui",
+  "version": "1.0.0",
+  "main": "index.html",
+  "author": "S.Siwakorn",
+  "license": "MIT",
+  "dependencies": {
+    "@arction/lcjs": "^3.4.0",
+    "@arction/xydata": "^1.4.0",
+    "chart.js": "^3.7.1",
+    "nouislider": "^15.5.1"
+  }
+}

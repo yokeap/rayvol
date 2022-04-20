@@ -1,0 +1,53 @@
+html {
+    margin:    0 auto;
+    max-width: 100%;
+  }
+body {
+    background-color: #121212;
+    overflow: hidden;
+    max-width: 100%;
+} 
+
+img {
+  object-fit: contain;
+}
+
+.row {
+  margin: 0;
+}
+
+.data-section {
+  display: flex;
+  justify-content: space-around;
+  height: 125px;
+}
+
+.card {
+  /* width: 287px;  */
+  height: 100px;
+  background-color: #323232; 
+}
+
+.card-title {
+  display: flex;
+  justify-content: center;
+}
+
+.card-subtitle {
+  display: flex;
+  justify-content: center;
+}
+
+.image-roi-section {
+  display: inline-flex;
+  flex-direction: row;
+  overflow-x: auto;
+  white-space: nowrap;
+  /* height: 100%; */
+}
+
+.image-roi {
+  margin-top: 2%;
+  margin-left: 1%;
+}
+

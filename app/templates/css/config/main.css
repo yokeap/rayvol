@@ -1,0 +1,12 @@
+/* config.html css */
+
+html {
+    margin:    0 auto;
+    max-width: 100%;
+  }
+  body {
+      background-color: #121212;
+      overflow: hidden;
+      max-width: 100%;
+    }
+  
