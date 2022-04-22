@@ -115,11 +115,12 @@ class Camera(object):
 
     def set_manual_exposure(self, dev_video_id, exposure_time):
         commands = [
-            ("v4l2-ctl --device /dev/video"+str(id)+" -c exposure_auto=3"),
-            ("v4l2-ctl --device /dev/video"+str(id)+" -c exposure_auto=1"),
-            ("v4l2-ctl --device /dev/video"+str(id)+" -c exposure_absolute="+str(exposure_time))
+            ("v4l2-ctl --device /dev/video"+str(dev_video_id)+" -c exposure_auto=3"),
+            ("v4l2-ctl --device /dev/video"+str(dev_video_id)+" -c exposure_auto=1"),
+            ("v4l2-ctl --device /dev/video"+str(dev_video_id)+" -c exposure_absolute="+str(exposure_time))
         ]
         for c in commands: 
+            print(c)
             os.system(c)
 
     # return latest read frame 
