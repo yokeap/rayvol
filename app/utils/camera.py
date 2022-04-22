@@ -4,6 +4,9 @@ import cv2
 from threading import Thread
 import datetime
 import time
+import os
+import json
+from sys import platform
 
 class Camera(object):
     def __init__(self):
@@ -65,14 +68,24 @@ class Camera(object):
             raise IOError("Cannot open webcam")
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, config['width'])
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config['height'])
-        self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)  # manual mode
+
+        if platform == "linux" or platform == "linux2":
+            self.set_manual_exposure(0, config['exposure'])
+
+        elif platform == "darwin":
+            self.set_manual_exposure(0, config['exposure'])
+
+        elif platform == "win32":
+            self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, -1)  # manual mode
+            self.cap.set(cv2.CAP_PROP_EXPOSURE, config['exposure'])
+
         self.cap.set(cv2.CAP_PROP_AUTO_WB, 1)  # manual mode
-        self.cap.set(cv2.CAP_PROP_EXPOSURE, config['exposure'])
         self.cap.set(cv2.CAP_PROP_BRIGHTNESS, config['brightness'])
         self.cap.set(cv2.CAP_PROP_CONTRAST, config['contrast'])
         self.cap.set(cv2.CAP_PROP_HUE, config['hue'])
         self.cap.set(cv2.CAP_PROP_SATURATION, config['saturation'])
         self.cap.set(cv2.CAP_PROP_SHARPNESS, config['sharpness'])
+
         return True
 
     def set_config(self, config):
@@ -99,6 +112,15 @@ class Camera(object):
         objJson['saturation'] = self.cap.get(cv2.CAP_PROP_SATURATION)
         objJson['sharpness'] = self.cap.get(cv2.CAP_PROP_SHARPNESS)
         return objJson
+
+    def set_manual_exposure(self, dev_video_id, exposure_time):
+        commands = [
+            ("v4l2-ctl --device /dev/video"+str(id)+" -c exposure_auto=3"),
+            ("v4l2-ctl --device /dev/video"+str(id)+" -c exposure_auto=1"),
+            ("v4l2-ctl --device /dev/video"+str(id)+" -c exposure_absolute="+str(exposure_time))
+        ]
+        for c in commands: 
+            os.system(c)
 
     # return latest read frame 
     def read(self):
