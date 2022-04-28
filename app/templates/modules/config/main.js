@@ -18,7 +18,8 @@ var exposureText = document.getElementById("expValText"),
 
 socket.on('data-config-params', function (data) {
     var data = JSON.parse(data)
-    console.log(data);
+    configs = data;
+    // console.log(configs);
     document.getElementById("expVal").value = data.exposure;
     document.getElementById("brightnessVal").value = data.brightness;
     document.getElementById("contrastVal").value = data.contrast;

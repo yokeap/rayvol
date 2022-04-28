@@ -1,5 +1,9 @@
 function saveCapture(){
-    socket.emit('capture', JSON.stringify({ capture : true }))
+    json= {
+        capture: true,
+        sample_number: document.getElementById("sname").value 
+    }
+    socket.emit('capture', JSON.stringify(json))
     var messageModal = new bootstrap.Modal(document.getElementById('messageModal'), {});
     document.getElementById("modal-text").innerHTML = "Data and picture have been saved";
     messageModal.toggle()
@@ -29,6 +33,25 @@ var radios = document.querySelectorAll('input[type=radio]');
 radios.forEach(
     radio => radio.addEventListener('change', () => {
             socket.emit('feed-status', JSON.stringify({ feedStatus : radio.value }))
+        }
+    )
+);
+
+var checkboxs = document.querySelectorAll('input[type=checkbox]');
+checkboxs.forEach(
+    checkbox => checkbox.addEventListener('change', () => {
+        console.log(checkbox);
+            // change view raw stream or 3D reconstruction view
+            if(checkbox.id == "swt3d"){
+                if(checkbox.checked == true){
+                    document.getElementById("streamRaw").style.display = "none";
+                    // document.getElementById("3dChart").style.display = "inline";
+                }
+                else {
+                    document.getElementById("streamRaw").style.display = "inline";
+                    // document.getElementById("3dChart").style.display = "none";
+                }
+            }
         }
     )
 );

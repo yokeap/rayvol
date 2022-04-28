@@ -22,7 +22,7 @@ elif platform == "win32":
     with open('./app/setting_win.json', 'r') as f:
         setting = json.load(f)
 
-# rayvol = Rayvol(socketio, setting)
+rayvol = Rayvol(socketio, setting, offline=False)
 
 # rayvol.start_camera()
 # rayvol.start_process_image()
@@ -59,6 +59,6 @@ def create_app(test_config=None):
     socketio.init_app(app)
 
     # start capturing process
-    # rayvol.camera_start()
+    rayvol.camera_start()
 
     return app

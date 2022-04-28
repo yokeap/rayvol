@@ -79,7 +79,7 @@ class Camera(object):
             self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, -1)  # manual mode
             self.cap.set(cv2.CAP_PROP_EXPOSURE, config['exposure'])
 
-        self.cap.set(cv2.CAP_PROP_AUTO_WB, 1)  # manual mode
+        # self.cap.set(cv2.CAP_PROP_AUTO_WB, 1)  # manual mode
         self.cap.set(cv2.CAP_PROP_BRIGHTNESS, config['brightness'])
         self.cap.set(cv2.CAP_PROP_CONTRAST, config['contrast'])
         self.cap.set(cv2.CAP_PROP_HUE, config['hue'])
@@ -117,10 +117,11 @@ class Camera(object):
         commands = [
             ("v4l2-ctl --device /dev/video"+str(dev_video_id)+" -c exposure_auto=3"),
             ("v4l2-ctl --device /dev/video"+str(dev_video_id)+" -c exposure_auto=1"),
-            ("v4l2-ctl --device /dev/video"+str(dev_video_id)+" -c exposure_absolute="+str(exposure_time))
+            ("v4l2-ctl --device /dev/video"+str(dev_video_id)+" -c exposure_absolute="+str(exposure_time)),
         ]
         for c in commands: 
             print(c)
+            time.sleep(1)
             os.system(c)
 
     # return latest read frame 

@@ -6,7 +6,7 @@ from . import mathTools
 from . import segmentation
 from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plot
-import plotly.graph_objects as go
+# import plotly.graph_objects as go
 
 plot.style.use('seaborn-darkgrid')
 
@@ -192,7 +192,7 @@ class reconstruct:
                                                        2] = self.ptCloudObjHeightUpper[self.loop, 2] * -1
                             self.loop = self.loop + 1
                             break
-                # for lower edges
+                # for lower edgesR
                 if flagObjLowerEdge == False and flagObjUpperEdge == True and pixObjVal < 255:
                     flagObjLowerEdge = True
                     posLower = [x, y, 1]
@@ -234,8 +234,7 @@ class reconstruct:
         self.sliceSplineX = np.array([])
         self.sliceSplineY = np.array([])
         self.sliceSplineZ = np.array([])
-        self.totalLength = self.ptCloudSectionLeft[self.loop -
-                                                   1, 1] - self.ptCloudSectionLeft[0, 1]
+        self.totalLength = self.ptCloudSectionLeft[self.loop -1, 1] - self.ptCloudSectionLeft[0, 1]
         print("Object Total Length = ", self.totalLength)
 
         for i in range(0, self.loop):
@@ -326,7 +325,10 @@ class reconstruct:
                 self.sliceSplineLower[:, 0, sliceNumber], self.sliceSplineLower[:, 1, sliceNumber], marker='o')
             
             figSpline.show()
-        return self.slicingObj, self.objVolume, self.totalLength
+
+        self.width = np.amax(self.slicingObj[:, 1]) - np.amin(self.slicingObj[:, 2])
+        self.height = np.amax(self.slicingObj[:, 2]) - np.amin(self.slicingObj[:, 2])
+        return self.slicingObj, self.objVolume, self.totalLength, self.width, self.height
 
     def imgChart_3d(self):
         imgObjEdgeUpper = np.array(self.edgeObjUpper)

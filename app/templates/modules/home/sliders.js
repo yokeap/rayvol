@@ -18,28 +18,28 @@ function uiSlide_create() {
     noUiSlider.create(sliderObjV, sliderConfig);
 }
 
-document.querySelectorAll('[type=slider_hsv]').forEach(
-    slider_hsv => slider_hsv.noUiSlider.on('update', function(data) {
-        switch (slider_hsv.id) {
-            case "slider-h-obj": 
-                objHsvData.hue.min = data[0];
-                objHsvData.hue.max = data[1];
-                socket.emit('slider-obj-hsv', JSON.stringify(objHsvData));
-                break;
-            case "slider-s-obj": 
-                objHsvData.saturation.min = data[0];
-                objHsvData.saturation.max = data[1];
-                socket.emit('slider-obj-hsv', JSON.stringify(objHsvData));
-                break;
-            case "slider-v-obj": 
-                objHsvData.value.min = data[0];
-                objHsvData.value.max = data[1];
-                socket.emit('slider-obj-hsv', JSON.stringify(objHsvData));
-                break;
-        }
+// document.querySelectorAll('[type=slider_hsv]').forEach(
+//     slider_hsv => slider_hsv.noUiSlider.on('update', function(data) {
+//         switch (slider_hsv.id) {
+//             case "slider-h-obj": 
+//                 objHsvData.hue.min = data[0];
+//                 objHsvData.hue.max = data[1];
+//                 socket.emit('slider-obj-hsv', JSON.stringify(objHsvData));
+//                 break;
+//             case "slider-s-obj": 
+//                 objHsvData.saturation.min = data[0];
+//                 objHsvData.saturation.max = data[1];
+//                 socket.emit('slider-obj-hsv', JSON.stringify(objHsvData));
+//                 break;
+//             case "slider-v-obj": 
+//                 objHsvData.value.min = data[0];
+//                 objHsvData.value.max = data[1];
+//                 socket.emit('slider-obj-hsv', JSON.stringify(objHsvData));
+//                 break;
+//         }
 
-    })
-);
+//     })
+// );
 
 // bootstrap ranage update event
 var ranges = document.querySelectorAll('input[type=range]');

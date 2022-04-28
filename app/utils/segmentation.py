@@ -83,6 +83,7 @@ def singleObjShadow(imgSource, imgOpening):
 
     big_contour = max(contours, key=cv2.contourArea)
 
+    # if len(contours) != 0:
     (x, y, w, h) = cv2.boundingRect(big_contour)
     OriginX = x - round(margin / 2)
     OriginY = y - round(margin / 2)
@@ -90,8 +91,11 @@ def singleObjShadow(imgSource, imgOpening):
     Height = h + margin
     # cv2.rectangle(imgContour, (x, y), (x+w, y+h), (0, 255, 0), 2)
     boudingRect.append([OriginX, OriginY, Width, Height])
-    cv2.rectangle(imgInput, (OriginX, OriginY), (x + Width, y + Height), (255, 255, 255), 2)
+    cv2.rectangle(imgInput, (OriginX, OriginY), (x + Width, y + Height), (0, 0, 255), 2)
     imgArrayROI.append(imgSegmentBlackColor[OriginY:OriginY + Height, OriginX:OriginX + Width])
+    # else:
+    #     cv2.putText(image, 'OpenCV', org, font, 
+    #                fontScale, color, thickness, cv2.LINE_AA)
     
     return imgArrayROI, boudingRect
 
@@ -248,10 +252,18 @@ def obj(imgHSV):
     hChannel, sChannel, vChannel = imgHSV[:,:,0], imgHSV[:,:,1], imgHSV[:,:,2]
     mean, std = cv2.meanStdDev(sChannel) 
     # sChannelThreshold = abs(mean + (std*0.3))[0][0]
-    sChannelThreshold = mean[0][0]
+    sChannelThreshold = std[0][0]
     # print(sChannelThreshold)
     imgHSV = cv2.inRange(
         imgHSV, (0, sChannelThreshold, 1), (360, 255, 255))
+    hsvRange = {
+        'hue_min': 0,
+        'saturation_min': sChannelThreshold,
+        'value_min': 1,
+        'hue_max': 360,
+        'saturation_max': 255,
+        'value_max': 255
+    }
     # cv2.imshow("obj Range", imgHSV)
     # imgObj = cv2.bitwise_xor(imgHSV, imgShadow)
     # imgObj = cv2.bitwise_and(imgObj, imgHSV)
@@ -272,7 +284,7 @@ def obj(imgHSV):
         cv2.drawContours(imgContour, [approx], 0, 255, -1)
         cv2.drawContours(imgConvex, [cnt], 0, 255, -1)
         # imgObj = cv2.morphologyEx(imgObj, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8), iterations=1)  
-    return imgContour, imgConvex
+    return imgContour, imgConvex, hsvRange
 
 def OpeningObj(img):
     # Define thresholds for channel 1 based on histogram settings
@@ -413,10 +425,22 @@ def shadowEdgeOnObj(imgObjColor, imgHSV, hue, saturation, value):
     # imgShadowOnObj = cv2.morphologyEx(imgShadowOnObj, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8), iterations=1)
     return imgConvex
 
-def obj_shadow_skeleton(imgROI):
-    imageHSV = cv2.cvtColor(imgROI, cv2.COLOR_BGR2HSV_FULL)
+def obj_shadow_skeleton(imageROI):
+    imageHSV = cv2.cvtColor(imageROI, cv2.COLOR_BGR2HSV_FULL)
+    # imageHSV = increase_brightness(imageHSV, 200)
     # imageShadow = shadow(imageHSV)
-    imageObj, imageObjConvex = obj(imageHSV)
+    imageObj, imageObjConvex, objHsvRange = obj(imageHSV)
     imageSkeleton = skeleton(imageObjConvex)
-    imageShadow = shadow(imgROI, imageObj)
-    return imageObj, imageShadow, imageSkeleton
+    imageShadow = shadow(imageROI, imageObj)
+    return imageHSV, imageObj, imageShadow, imageSkeleton, objHsvRange
+
+# def increase_brightness(imageHSV, value):
+#     h, s, v = cv2.split(imageHSV)
+
+#     lim = 255 - value
+#     v[v > lim] = 255
+#     v[v <= lim] += value
+
+#     final_hsv = cv2.merge((h, s, v))
+#     # image = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+#     return final_hsv

@@ -44,9 +44,8 @@
 
         <div class="d-flex flex-row justify-content-start" style="height: 550px; width: 1280px;">
             <div class="container" style="height: 100%; width: 733px;">
-                <img class="py-2" id="img-stream" src="./image_mock.jpg" alt="test" style="height: 100%; object-fit: contain;">
-                <!-- <img class="py-2" id="img-stream" src="{{ url_for('home.config_feed') }}" alt="test"
-                style="max-width: 100%; object-fit: contain;"> -->
+                <!-- <img class="py-2" id="img-stream" src="./image_mock.jpg" alt="test" style="height: 100%; object-fit: contain;"> -->
+                <img class="py-2" id="img-stream" src="{{ url_for('home.config_feed') }}" alt="test" style="max-width: 100%; object-fit: contain;">
                 <!-- <img id="img-stream" src="./view/static/img/mock.jpg" alt="test" style="max-width: 100%;"> -->
             </div>
 
@@ -138,6 +137,25 @@
         </div>
     </div>
 
+    <!-- Modal -->
+    <div class="py-2">
+        <div class="modal" id="messageModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">RayVol</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modal-text">Modal body text goes here.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script> -->
     <!-- <script src="./view/static/js/script.js"></script> -->

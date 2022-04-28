@@ -215,17 +215,17 @@ function hsvChart_create(id_h, id_s, id_v) {
 
 function hsvChart_update(data) {
     if (chart_histObjH instanceof Chart) {
-        chart_histObjH.options.scales.y.max = JSON_received.hist_h_ymax;
+        chart_histObjH.options.scales.y.max = data.hist_h_ymax;
         chart_histObjH.data.datasets[0].data = data.hist_h[0];
         chart_histObjH.update();
     }
     if (chart_histObjS instanceof Chart) {
-        chart_histObjS.options.scales.y.max = JSON_received.hist_s_ymax;
+        chart_histObjS.options.scales.y.max = data.hist_s_ymax;
         chart_histObjS.data.datasets[0].data = data.hist_s[0];
         chart_histObjS.update();
     }
     if (chart_histObjV instanceof Chart) {
-        chart_histObjV.options.scales.y.max = JSON_received.hist_v_ymax;
+        chart_histObjV.options.scales.y.max = data.hist_v_ymax;
         chart_histObjV.data.datasets[0].data = data.hist_v[0];
         chart_histObjV.update();
     }

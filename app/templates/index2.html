@@ -14,8 +14,11 @@
     <link rel="stylesheet" href="/node_modules/nouislider/dist/nouislider.min.css">
     <script type="text/javascript" src="//cdn.socket.io/4.4.1/socket.io.min.js"></script>
     <script type="text/javascript" src="/node_modules/chart.js/dist/chart.min.js"></script>
+    <link rel="stylesheet" href="/css/switch.css">
     <link rel="stylesheet" href="/css/home/slider.css">
     <link rel="stylesheet" href="/css/home/main.css">
+    <script src="/node_modules/@arction/xydata/dist/xydata.iife.js"></script>
+    
     <title>RayVol</title>
 </head>
 
@@ -25,8 +28,15 @@
     <div class="navbar navbar-dark shadow-sm" style="height: 50px; background-color: #854BFE; padding: 0%;">
         <div class="container" style="max-width: 80%; margin-top: 0%;">
             <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-                <h3 class="text-white justify-content-center">RayVol</h3>
+                <h3 class="text-white d-flex flex-row align-items-center">RayVol</h3>
             </div>
+
+            <div class="d-flex flex-row align-items-center">
+                <label class=text-white>Sample No:</label>
+                <input type="text" id="sname" name="sname"><br><br>
+            </div>
+
+           
             <div class="d-flex flex-row">
                 <a class="nav-link" href="http://localhost:5000/">
                     <span style="font-size: 22px; color: white;">
@@ -95,9 +105,21 @@
             </div>
         </div>
 
-        <div class="d-flex flex-row" style="height: 600px; width: 1280px;">
-            <div class="d-flex flex-column " style="height: 100%; width: 680px;">
-                <img class="pt-4" src="./image_mock.jpg" width="95%">
+        <div class="d-flex flex-row" style="height: 600px; width: 1280px; ">
+            <div class="d-flex flex-column " style="height: 100%; width: 680px; overflow-y: auto;">
+                <div class="container" style="position: relative;">
+                    <img class="pt-4" src="{{ url_for('home.raw_feed') }}" id="streamRaw" width="95%">
+                    
+                        <!-- <div id="3dChart"></div> -->
+
+                    <!-- <span class="bt-toggle d-flex flex-row">
+                        <span class="h6 text-primary">Point Cloud</span>
+                        <label class="switch">
+                            <input type="checkbox" id="swt3d">                           
+                            <span class="slider round"></span>
+                        </label>
+                    </span> -->
+                </div>
             </div>
             
             <div class="d-flex flex-column" style="height: 100%; width: 600px;">
@@ -111,15 +133,19 @@
                             </div>
                             <div class="btn-group-vertical pt-3" role="group" name="radioGroup"
                                 aria-label="Basic radio toggle button group" style="width: 80%;">
-
-                                <input class="btn-check" type="radio" name="btnradio" value="shot" id="swt2dImage"
-                                    autocomplete="off" checked>
+<!-- 
+                                <input class="btn-check" type="radio" name="btnradio" value="shot" id="swtShotImage"  autocomplete="off" >
                                 <label class="btn btn-outline-primary text-white" style="font-size:smaller;" for="swt2dImage">Shot</label>
 
-                                <input class="btn-check" type="radio" name="btnradio" value="realtime"
-                                    id="swt3dReconstruction" autocomplete="off">
+                                <input class="btn-check" type="radio" name="btnradio" value="realtime"  autocomplete="off"  id="swt3dReconstruction">
                                 <label class="btn btn-outline-primary text-white" style="font-size:smaller;" 
-                                    for="swt3dReconstruction">Real-time</label>
+                                    for="swt3dReconstruction">Real-time</label> -->
+
+                                    <input type="radio" class="btn-check" name="btnradio" value="realtime" id="btnRealTime" autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary" for="btnRealTime">Real-Time</label>
+                                  
+                                    <input type="radio" class="btn-check" name="btnradio" value="shot" id="btnShot" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="btnShot">Shot</label>
                             </div>
                         </div>
                     </div>
@@ -131,7 +157,7 @@
                         <div class="d-flex flex-column justify-content-center align-middle">
                             <div class="row pt-2" style="margin-top: 10%">
                                 <div class="col-8">
-                                    <input type="range" class="form-range align-middle" min="0" max="255" id="subtractTreshVal">
+                                    <input type="range" class="form-range align-middle" min="0" max="255" value="50" id="subtractTreshVal">
                                 </div>
                                 <div class="col-4">
                                     <input type="text" id="subtractTreshValText" class="inputTextBox" style="width: 100%;">
@@ -175,21 +201,47 @@
 
                 <div class="row" style="height: 230px; width: 100%; overflow-x: auto;">
                     <div class="image-roi-section">
+                        <!-- <img class="image-roi" src="/image_obj.jpg" width="30%">
                         <img class="image-roi" src="/image_obj.jpg" width="30%">
-                        <img class="image-roi" src="/image_obj.jpg" width="30%">
-                        <img class="image-roi" src="/image_obj.jpg" width="30%">
+                        <img class="image-roi" src="/image_obj.jpg" width="30%"> -->
+
+                        <img class="image-roi" src="{{ url_for('home.obj_feed') }}" width="30%">
+                        <img class="image-roi" src="{{ url_for('home.shadow_feed') }}" width="30%">
+                        <img class="image-roi" src="{{ url_for('home.skeleton_feed') }}" width="30%">
                     </div>
                 </div>
 
             </div>  
 
         </div>
+
+        <!-- Modal -->
+        <div class="py-2">
+            <div class="modal" id="messageModal">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">RayVol</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p id="modal-text">Modal body text goes here.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>  
     </div>
+    <!-- <script src="/node_modules/nouislider/dist/nouislider.min.js"></script> -->
+    <script src="/node_modules/@arction/lcjs/dist/lcjs.iife.js"></script>
     <script src="/modules/home/sliders.js"></script>
     <script src="/modules/home/charthsv.js"></script>
     <script src="/modules/home/events.js"></script>
     <script src="/modules/home/main.js"></script>
-    <script src="/node_modules/nouislider/dist/nouislider.min.js"></script>
+    <script src="/modules/home/3dchart.js"></script>
 </body>
 
 </html>
