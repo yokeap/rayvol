@@ -195,7 +195,8 @@ class Rayvol(object):
                     self.imageDiffMorph = cv2.morphologyEx(
                                 self.imageDiffBin, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT,(7,7)))
                     self.imageROI, self.posCrop = segmentation.singleObjShadow(self.raw_frame, self.imageDiffMorph)
-                    self.imageObjColor, self.imageObj, self.imageShadow, self.imageSkeleton, self.objHsvRange = segmentation.obj_shadow_skeleton(self.imageROI[0])
+                    self.imageObjColor, self.imageObj, self.imageShadow, self.imageSkeleton, self.objHsvRange, self.angle = segmentation.obj_shadow_skeleton(self.imageROI[0])
+                    cv2.putText(self.overlay_frame, str(self.angle), (self.posCrop[0][0], self.posCrop[0][1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
                     # self.imageObjColor, self.imageObj, self.imageShadow, self.imageSkeleton, self.objHsvRange = segmentation.shadow_obj_skeleton(self.imageROI[0])
                     self.objReconstruct.reconstruct(self.raw_frame, self.imageObj, self.imageSkeleton, self.imageShadow, self.posCrop )
                     ptCloud, self.volume, self.length, self.width, self.height = self.objReconstruct.reconstructVolume(0.05)

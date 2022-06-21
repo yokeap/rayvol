@@ -93,6 +93,7 @@ def singleObjShadow(imgSource, imgOpening):
     boudingRect.append([OriginX, OriginY, Width, Height])
     cv2.rectangle(imgInput, (OriginX, OriginY), (x + Width, y + Height), (0, 0, 255), 2)
     imgArrayROI.append(imgSegmentBlackColor[OriginY:OriginY + Height, OriginX:OriginX + Width])
+
     # else:
     #     cv2.putText(image, 'OpenCV', org, font, 
     #                fontScale, color, thickness, cv2.LINE_AA)
@@ -288,8 +289,14 @@ def obj(imgHSV):
         cnt = cv2.convexHull(big_contour)
         cv2.drawContours(imgContour, [approx], 0, 255, -1)
         cv2.drawContours(imgConvex, [cnt], 0, 255, -1)
+
+        # fit contour to ellipse and get ellipse center, minor and major diameters and angle in degree 
+        ellipse = cv2.fitEllipse(big_contour)
+        (xc,yc),(d1,d2),angle = ellipse
+        # print(xc,yc,d1,d1,angle)
+        # cv2.putText(overlayImage, str(angle), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
         # imgObj = cv2.morphologyEx(imgObj, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8), iterations=1)  
-    return imgContour, imgConvex, hsvRange
+    return imgContour, imgConvex, hsvRange, round(90.0 - angle, 0)
 
 def OpeningObj(img):
     # Define thresholds for channel 1 based on histogram settings
@@ -444,11 +451,11 @@ def obj_shadow_skeleton(imageROI):
     imageHSV = cv2.cvtColor(imageROI, cv2.COLOR_BGR2HSV_FULL)
     # imageHSV = increase_brightness(imageHSV, 200)
     # imageShadow = shadow(imageHSV)
-    imageObj, imageObjConvex, objHsvRange = obj(imageHSV)
+    imageObj, imageObjConvex, objHsvRange, angle = obj(imageHSV)
     # imageSkeleton = skeleton(imageObjConvex)
     imageShadow, imageShadowConvex = shadow(imageROI, imageObj)
     imageSkeleton = skeleton(imageObjConvex)
-    return imageHSV, imageObj, imageShadow, imageSkeleton, objHsvRange
+    return imageHSV, imageObj, imageShadow, imageSkeleton, objHsvRange, angle
 
 # def increase_brightness(imageHSV, value):
 #     h, s, v = cv2.split(imageHSV)
