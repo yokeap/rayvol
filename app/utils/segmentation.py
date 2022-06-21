@@ -197,10 +197,15 @@ def shadow(imgROI, imgObj):
     contours, hierarchy = cv2.findContours(
         imgShadow, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
+    imgConvex = np.zeros_like(imgShadow )
     if len(contours) != 0:
         # find the biggest area of the contour
         big_contour = max(contours, key=cv2.contourArea)
+        epsilon = 0.001*cv2.arcLength(big_contour, True)
+        approx = cv2.approxPolyDP(big_contour, epsilon, True)
         # cv2.drawContours(imgObj, [big_contour], 0, (255, 255, 255), -1)
+        cnt = cv2.convexHull(big_contour)
+        cv2.drawContours(imgConvex, [cnt], 0, 255, -1)
         # cnt = cv2.convexHull(big_contour)
         cv2.drawContours(imgContour, [big_contour], 0, (255, 255, 255), -1)
 
@@ -224,7 +229,7 @@ def shadow(imgROI, imgObj):
         #                              np.ones((15, 15), np.uint8))
     # cv2.drawContours(imgShadow, big_contour, 0, 255, 1)
     imgExOr = cv2.bitwise_xor(imgContour, imgObj)
-    return cv2.bitwise_and(imgContour, imgExOr)
+    return cv2.bitwise_and(imgContour, imgExOr), imgConvex
 
 # def shadow(imageHSV):
 #     hChannel, sChannel, vChannel = imageHSV[:,:,0], imageHSV[:,:,1], imageHSV[:,:,2]
@@ -251,8 +256,8 @@ def shadow(imgROI, imgObj):
 def obj(imgHSV):
     hChannel, sChannel, vChannel = imgHSV[:,:,0], imgHSV[:,:,1], imgHSV[:,:,2]
     mean, std = cv2.meanStdDev(sChannel) 
-    # sChannelThreshold = abs(mean + (std*0.3))[0][0]
-    sChannelThreshold = std[0][0]
+    sChannelThreshold = abs(mean + (std*0.5))[0][0]
+    # sChannelThreshold = std[0][0] * 0.8
     # print(sChannelThreshold)
     imgHSV = cv2.inRange(
         imgHSV, (0, sChannelThreshold, 1), (360, 255, 255))
@@ -425,13 +430,24 @@ def shadowEdgeOnObj(imgObjColor, imgHSV, hue, saturation, value):
     # imgShadowOnObj = cv2.morphologyEx(imgShadowOnObj, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8), iterations=1)
     return imgConvex
 
+def shadow_obj_skeleton(imageROI):
+    imageHSV = cv2.cvtColor(imageROI, cv2.COLOR_BGR2HSV_FULL)
+    # imageHSV = increase_brightness(imageHSV, 200)
+    # imageShadow = shadow(imageHSV)
+    imageObj, imageObjConvex, objHsvRange = obj(imageHSV)
+    # imageSkeleton = skeleton(imageObjConvex)
+    imageShadow, imageShadowConvex = shadow(imageROI, imageObj)
+    imageSkeleton = skeleton(imageShadowConvex)
+    return imageHSV, imageShadow, imageObj, imageSkeleton, objHsvRange
+
 def obj_shadow_skeleton(imageROI):
     imageHSV = cv2.cvtColor(imageROI, cv2.COLOR_BGR2HSV_FULL)
     # imageHSV = increase_brightness(imageHSV, 200)
     # imageShadow = shadow(imageHSV)
     imageObj, imageObjConvex, objHsvRange = obj(imageHSV)
+    # imageSkeleton = skeleton(imageObjConvex)
+    imageShadow, imageShadowConvex = shadow(imageROI, imageObj)
     imageSkeleton = skeleton(imageObjConvex)
-    imageShadow = shadow(imageROI, imageObj)
     return imageHSV, imageObj, imageShadow, imageSkeleton, objHsvRange
 
 # def increase_brightness(imageHSV, value):

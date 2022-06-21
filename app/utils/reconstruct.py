@@ -236,6 +236,8 @@ class reconstruct:
         self.sliceSplineZ = np.array([])
         self.totalLength = self.ptCloudSectionLeft[self.loop -1, 1] - self.ptCloudSectionLeft[0, 1]
         print("Object Total Length = ", self.totalLength)
+        # self.width = np.amax(self.ptCloudSectionRight[:, 0]) - np.amin(self.ptCloudSectionLeft[:, 0])
+        # print("width: " + str(np.amax(self.ptCloudSectionRight[:, 0]) - np.amin(self.ptCloudSectionLeft[:, 0])))
 
         for i in range(0, self.loop):
             # to compute area properly polygon points must be sort to counter clockwise
@@ -326,8 +328,15 @@ class reconstruct:
             
             figSpline.show()
 
-        self.width = np.amax(self.slicingObj[:, 1]) - np.amin(self.slicingObj[:, 2])
-        self.height = np.amax(self.slicingObj[:, 2]) - np.amin(self.slicingObj[:, 2])
+        self.width = self.slicingObj[np.argmax(self.slicingObj[:, 1]), 1] - self.slicingObj[np.argmin(self.slicingObj[:, 1]), 1]
+        # self.width = abs(np.amax(self.ptCloudSectionRight[:, 0]) - np.amin(self.ptCloudSectionLeft[:, 0]))
+        
+        # print("sliceLeft: " + str(np.argmax(self.ptCloudSectionLeft[:, 0])) + ", " + str(np.argmin(self.ptCloudSectionLeft[:, 0])))
+        # print("sliceRight: " + str(np.argmax(self.ptCloudSectionRight[:, 0])) + ", " + str(np.argmin(self.ptCloudSectionRight[:, 0])))
+        self.height = self.slicingObj[np.argmax(self.slicingObj[:, 2]), 2] - self.slicingObj[np.argmin(self.slicingObj[:, 2]), 2]
+        # self.height = np.amax(self.ptCloudObjHeightUpper[:,2]) * 2
+        # print("width:" + self.width)
+        # print("height: " + self.height)
         return self.slicingObj, self.objVolume, self.totalLength, self.width, self.height
 
     def imgChart_3d(self):

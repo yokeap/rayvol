@@ -30,8 +30,9 @@ class Rayvol(object):
             self.camera = Camera()
         # self.raw_stream = Streamer()
 
-        time.sleep(3)
+        time.sleep(1)
         self.set_camera_init_config()
+        time.sleep(1)
 
         self.raw_frame = None
         self.raw_stream_enable = False
@@ -51,6 +52,9 @@ class Rayvol(object):
         # self.objValue = config["value"]
 
         # self.camera_start()
+
+        self.intrinsic_matrix = np.array(self.config["intrinsicMatrix"])
+        self.distortion_coefficient = np.array(self.config["distortionCoe"])
 
         self.thread_process_image = Thread(target=self.process_image, daemon=True, args=())
 
@@ -100,6 +104,7 @@ class Rayvol(object):
         return True
 
     def start_process_image(self):
+        self.imgBg = cv2.cvtColor(cv2.imread("./app/ref/background_400.jpg"), cv2.COLOR_BGR2GRAY)
         if self.offline == False:
             self.stopped_process_image = False
             if not self.thread_process_image.is_alive():
@@ -122,7 +127,8 @@ class Rayvol(object):
         p = os.path.sep.join(
             ['./app/ref', "background_400.jpg"])
         print(p)
-        cv2.imwrite(p, self.camera.read())
+        raw_frame = cv2.undistort(self.camera.read(), self.intrinsic_matrix, self.distortion_coefficient, None)
+        cv2.imwrite(p, raw_frame)
 
     def capture_all(self, sample_number):
         now = datetime.datetime.now()
@@ -132,8 +138,12 @@ class Rayvol(object):
             os.makedirs(p)
         except OSError as error:
             print(error)
-        cv2.putText(self.raw_frame, sample_number, (80, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-        cv2.imwrite(os.path.join(p, "imageraw.jpg"), self.raw_frame)
+        text = sample_number + ", " + str(self.volume) + "cm^3" + ", " + str(round(self.length, 2)) + ", " + str(round(self.width, 2)) + ", " + str(round(self.height, 2))
+        # raw_with_measured = self.raw_frame.copy()
+        raw_frame = cv2.undistort(self.camera.read(), self.intrinsic_matrix, self.distortion_coefficient, None)
+        cv2.putText(self.overlay_frame, text, (80, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+        cv2.imwrite(os.path.join(p, "imageraw.jpg"), raw_frame )
+        cv2.imwrite(os.path.join(p, "imageraw_overlay.jpg"), self.overlay_frame)
         cv2.imwrite(os.path.join(p, "imagediff.jpg"), self.imageDiff)
         cv2.imwrite(os.path.join(p, "imagediffbin.jpg"), self.imageDiffBin)
         cv2.imwrite(os.path.join(p, "imagediffmorph.jpg"), self.imageDiffMorph)
@@ -155,6 +165,16 @@ class Rayvol(object):
             
             with open(os.path.join(p, "reconstruct.json"), 'w') as f:
                 json.dump(self.objJson, f)
+
+            objJson = {
+                'volume': self.objJson["volume"],
+                "length": self.objJson["length"],
+                "width": self.objJson["width"],
+                "height": self.objJson["height"],
+                "computeTime": self.objJson["computeTime"]
+            }
+            with open(os.path.join(p, "result_" + sample_number + ".json"), 'w') as f:
+                json.dump(objJson , f)
         except:
             pass
 
@@ -165,8 +185,10 @@ class Rayvol(object):
                     pass
                 else:
                     start_time = time.time()
-                    self.raw_frame = self.camera.read()
+                    # self.raw_frame = self.camera.read()
+                    self.raw_frame = cv2.undistort(self.camera.read(), self.intrinsic_matrix, self.distortion_coefficient, None)
                     self.overlay_frame = self.overlay_lightsource_projection(self.raw_frame)
+                    self.overlay_frame = self.overlay_measure_area(self.overlay_frame)
                     self.imageDiff =  cv2.absdiff(cv2.cvtColor(self.raw_frame, cv2.COLOR_BGR2GRAY), self.imgBg)
                     ret, self.imageDiffBin = cv2.threshold(
                                 self.imageDiff, 5, 255, cv2.THRESH_BINARY)
@@ -174,8 +196,9 @@ class Rayvol(object):
                                 self.imageDiffBin, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT,(7,7)))
                     self.imageROI, self.posCrop = segmentation.singleObjShadow(self.raw_frame, self.imageDiffMorph)
                     self.imageObjColor, self.imageObj, self.imageShadow, self.imageSkeleton, self.objHsvRange = segmentation.obj_shadow_skeleton(self.imageROI[0])
+                    # self.imageObjColor, self.imageObj, self.imageShadow, self.imageSkeleton, self.objHsvRange = segmentation.shadow_obj_skeleton(self.imageROI[0])
                     self.objReconstruct.reconstruct(self.raw_frame, self.imageObj, self.imageSkeleton, self.imageShadow, self.posCrop )
-                    ptCloud, volume, length, width, height = self.objReconstruct.reconstructVolume(0.05)
+                    ptCloud, self.volume, self.length, self.width, self.height = self.objReconstruct.reconstructVolume(0.05)
                     end_time = time.time()
                     if self.is_socketConnecting == True:
                         self.objJson = {
@@ -184,10 +207,10 @@ class Rayvol(object):
                                 "y": ptCloud[:, 1].tolist(),
                                 "z": ptCloud[:, 2].tolist(),
                             },
-                            "volume": volume,
-                            "length": length,
-                            "width": width,
-                            "height": height,
+                            "volume": self.volume,
+                            "length": self.length,
+                            "width": self.width,
+                            "height": self.height,
                             "computeTime": (end_time - start_time)
                         }
                         self.socket.emit('reconstruction-data', json.dumps(self.objJson))
@@ -240,7 +263,7 @@ class Rayvol(object):
                 yield (self.msg_image_gen(self.imageObj))
                 prefix = "\r\n"
             except Exception as e:
-                # print(e)
+                print(e)
                 pass
             time.sleep(1 / 30)
 
@@ -269,10 +292,12 @@ class Rayvol(object):
     def config_stream(self):
         while self.config_stream_enable == True:
             raw_frame = self.camera.read()
+            raw_frame = cv2.undistort(raw_frame, self.intrinsic_matrix, self.distortion_coefficient, None)
             if self.config_hsv_enable == True:
                 imageHSV = cv2.cvtColor(raw_frame, cv2.COLOR_BGR2HSV_FULL)
                 objJson = self.get_hsv(imageHSV)
                 self.socket.emit('hsv-config-data', json.dumps(objJson))
+            overlay_raw_frame = self.overlay_measure_area(raw_frame)
             yield (self.msg_image_gen(raw_frame))
             prefix = "\r\n"
             time.sleep(1 / 30)
@@ -319,9 +344,12 @@ class Rayvol(object):
 
         crop_image = full_image[lightsource_offset[0]:lightsource_offset[0]+height, 0:image.shape[1]]
 
-        cv2.circle(crop_image ,(389, 164), 10, (0,0,255), -1)
-        cv2.circle(crop_image ,(825, 164), 10, (0,0,255), -1)
-        cv2.circle(crop_image ,(383, 605), 10, (0,0,255), -1)
-        cv2.circle(crop_image ,(833, 605), 10, (0,0,255), -1)
-        
         return crop_image
+
+    def overlay_measure_area(self, image):
+        overlay_image = image
+        cv2.circle(overlay_image ,(159, 96), 10, (0,0,255), -1)
+        cv2.circle(overlay_image ,(1041, 100), 10, (0,0,255), -1)
+        cv2.circle(overlay_image ,(148, 807), 10, (0,0,255), -1)
+        cv2.circle(overlay_image ,(1054, 803), 10, (0,0,255), -1)
+        return overlay_image
